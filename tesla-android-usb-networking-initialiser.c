@@ -9,6 +9,9 @@
 char* appleVendorId = "05ac";
 char* appleInitialisationCommand = "usbmuxd -v -f -X";
 
+char* alcatelIK41XXId = "1bbb:00b6"
+char* alcatelIK41XXInitialisationCommand = 'echo -e "AT+USBMODE=1\r\n" > /dev/ttyUSB2';
+
 int connectedDevicesSize = 0;
 char **connectedDeviceIds;
 
@@ -36,6 +39,9 @@ void initialiseDevice(char * deviceId) {
 	if(strstr(deviceId, appleVendorId)) {
 		printf("Initialising Apple device with usbmuxd");
 		system(appleInitialisationCommand);
+	} else if(strstr(deviceId, alcatelIK41XXId)) {
+		printf("Converting Alcatel IK41 from mbim to rndis");
+		system(alcatelIK41XXInitialisationCommand);
 	}
 }
 
