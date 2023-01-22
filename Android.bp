@@ -1,0 +1,51 @@
+cc_binary {
+    name: "tesla-android-usb-networking-initialiser",
+
+    srcs: [
+    	"tesla-android-usb-networking-initialiser.c",     
+    	"toybox/dirtree.c",
+    	"toybox/lib.c",
+    	"toybox/xwrap.c",
+    	"toybox/portability.c",
+		"toybox/llist.c",
+		"toybox/toybox.c",
+    ],
+
+    include_dirs: [
+        "external/toybox",
+        "external/toybox/android/device",
+    ],
+
+    cflags: [
+        "-Os",
+        "-Wall",
+        "-Werror",
+        "-Wno-char-subscripts",
+        "-Wno-deprecated-declarations",
+        "-Wno-missing-field-initializers",
+        "-Wno-pointer-arith",
+        "-Wno-sign-compare",
+        "-Wno-string-plus-int",
+        "-Wno-unused-parameter",
+        "-Wno-unused-variable",
+        "-funsigned-char",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-fno-asynchronous-unwind-tables",
+        "-DTOYBOX_VENDOR=\"-android\"",
+    ],
+
+    shared_libs: [
+        "libcrypto",
+        "libz",
+    ],
+    target: {
+        android: {
+            shared_libs: [
+                "liblog",
+                "libprocessgroup",
+                "libselinux",
+            ],
+        },
+    },
+}
