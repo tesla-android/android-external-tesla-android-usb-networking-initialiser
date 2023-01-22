@@ -9,11 +9,14 @@
 char* appleVendorId = "05ac";
 char* appleInitialisationCommand = "usbmuxd -v -f -X";
 
-char* alcatelIK41XXId = "1bbb:00b6"
-char* alcatelIK41XXInitialisationCommand = 'echo -e "AT+USBMODE=1\r\n" > /dev/ttyUSB2';
+char* alcatelIK41XXId = "1bbb:00b6";
+char* alcatelIK41XXInitialisationCommand = "echo -e \"AT+USBMODE=1\r\n\" > /dev/ttyUSB2";
 
-char* alcatelIK40VId = "1bbb:f000"
+char* alcatelIK40VId = "1bbb:f000";
 char* alcatelIK40VInitialisationCommand = "/vendor/bin/usb_modeswitch -c /vendor/tesla-android/usb_modeswitch/1bbb-f000.conf";
+
+char* huaweiVendorId = "12d1";
+char* huaweiInitialisationCommand = "/vendor/bin/usb_modeswitch -c /vendor/tesla-android/usb_modeswitch/12d1.conf";
 
 int connectedDevicesSize = 0;
 char **connectedDeviceIds;
@@ -48,6 +51,9 @@ void initialiseDevice(char * deviceId) {
 	} else if(strstr(deviceId, alcatelIK40VId)) {
 		printf("Initialising Alcatel IK40V");
 		system(alcatelIK40VInitialisationCommand);
+	} else if(strstr(deviceId, huaweiVendorId)) {
+		printf("Initialising Huawei device");
+		system(huaweiInitialisationCommand);
 	}
 }
 
