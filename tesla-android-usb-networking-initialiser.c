@@ -18,6 +18,11 @@ char* alcatelIK40VInitialisationCommand = "/vendor/bin/usb_modeswitch -c /vendor
 char* huaweiVendorId = "12d1";
 char* huaweiInitialisationCommand = "/vendor/bin/usb_modeswitch -c /vendor/tesla-android/usb_modeswitch/12d1.conf";
 
+// https://www.draisberghof.de/usb_modeswitch/bb/viewtopic.php?f=3&t=3043&p=20026#p20054
+char* huawei_E3372_325Id = "3566:2001";
+char* huawei_E3372_325InitialisationCommand1 = "/vendor/bin/usb_modeswitch -v 3566 -p 2001 -W -R -w 400";
+char* huawei_E3372_325InitialisationCommand2 = "/vendor/bin/usb_modeswitch -v 3566 -p 2001 -W -R";
+
 int connectedDevicesSize = 0;
 char **connectedDeviceIds;
 
@@ -54,6 +59,10 @@ void initialiseDevice(char * deviceId) {
 	} else if(strstr(deviceId, huaweiVendorId)) {
 		printf("Initialising Huawei device");
 		system(huaweiInitialisationCommand);
+	} else if(strstr(deviceId, huawei_E3372_325Id)) {
+		printf("Initialising Huawei device");
+		system(huawei_E3372_325InitialisationCommand1);
+		system(huawei_E3372_325InitialisationCommand2);
 	}
 }
 
