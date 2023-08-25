@@ -18,7 +18,7 @@ char* alcatelIK40VInitialisationCommand = "/vendor/bin/usb_modeswitch -c /vendor
 char* huaweiVendorId = "12d1";
 char* huaweiInitialisationCommand = "/vendor/bin/usb_modeswitch -c /vendor/tesla-android/usb_modeswitch/12d1.conf";
 
-char* vodafoneK5161h = "12d1:1f1d";
+char* vodafoneK5161hId = "12d1:1f1d";
 char* vodafoneK5161hInitialisationCommand = "/vendor/bin/usb_modeswitch -c /vendor/tesla-android/usb_modeswitch/12d1-1f1d.conf";
 
 // https://www.draisberghof.de/usb_modeswitch/bb/viewtopic.php?f=3&t=3043&p=20026#p20054
@@ -59,7 +59,7 @@ void initialiseDevice(char * deviceId) {
 	} else if(strstr(deviceId, alcatelIK40VId)) {
 		printf("Initialising Alcatel IK40V");
 		system(alcatelIK40VInitialisationCommand);
-	} else if(strstr(deviceId, vodafoneK5161h)) {
+	} else if(strstr(deviceId, vodafoneK5161hId)) {
 		printf("Initialising Vodafone device");
 		system(vodafoneK5161hInitialisationCommand);
 	} else if(strstr(deviceId, huaweiVendorId)) {
