@@ -76,26 +76,32 @@ static char *help_data =
 #include "generated/newtoys.h"
 ;
 
-void show_help(FILE *out, int full)
+void show_help(FILE *out, int flags)
 {
   int i = toys.which-toy_list;
   char *s, *ss;
 
-  if (!(full&2))
-    fprintf(out, "Toybox %s"USE_TOYBOX(" multicall binary")"%s\n\n",
-      toybox_version, (CFG_TOYBOX && i) ? " (see toybox --help)"
-      : " (see https://landley.net/toybox)");
-
   if (CFG_TOYBOX_HELP) {
+    if (flags & HELP_HEADER)
+      fprintf(out, "Toybox %s"USE_TOYBOX(" multicall binary")"%s\n\n",
+        toybox_version, (CFG_TOYBOX && i) ? " (see toybox --help)"
+        : " (see https://landley.net/toybox)");
+
     for (;;) {
       s = help_data;
       while (i--) s += strlen(s) + 1;
       // If it's an alias, restart search for real name
       if (*s != 255) break;
       i = toy_find(++s)-toy_list;
+      if ((flags & HELP_SEE) && toy_list[i].flags) {
+        if (flags & HELP_HTML) fprintf(out, "See <a href=#%s>%s</a>\n", s, s);
+        else fprintf(out, "%s see %s\n", toys.which->name, s);
+
+        return;
+      }
     }
 
-    if (full) fprintf(out, "%s\n", s);
+    if (!(flags & HELP_USAGE)) fprintf(out, "%s\n", s);
     else {
       strstart(&s, "usage: ");
       for (ss = s; *ss && *ss!='\n'; ss++);
@@ -119,9 +125,11 @@ void check_help(char **arg)
     if (toys.which->flags&TOYFLAG_NOHELP) return;
 
   if (!strcmp(*arg, "--help")) {
-    if (CFG_TOYBOX && toys.which == toy_list && arg[1])
+    if (CFG_TOYBOX && toys.which == toy_list && arg[1]) {
+      toys.which = 0;
       if (!(toys.which = toy_find(arg[1]))) unknown(arg[1]);
-    show_help(stdout, 1);
+    }
+    show_help(stdout, HELP_HEADER);
     xexit();
   }
 
@@ -144,16 +152,17 @@ void toy_singleinit(struct toy_list *which, char *argv[])
     for (toys.optc = 0; toys.optargs[toys.optc]; toys.optc++);
   }
 
+  // Setup we only want to do once: skip for multiplexer or NOFORK reentry
   if (!(CFG_TOYBOX && which == toy_list) && !(which->flags & TOYFLAG_NOFORK)) {
     toys.old_umask = umask(0);
     if (!(which->flags & TOYFLAG_UMASK)) umask(toys.old_umask);
 
-    // Try user's locale, but merge in the en_US.UTF-8 locale's character
-    // type data if the user's locale isn't UTF-8. (We can't merge in C.UTF-8
-    // because that locale doesn't exist on macOS.)
+    // Try user's locale, but if that isn't UTF-8 merge in a UTF-8 locale's
+    // character type data. (Fall back to en_US for MacOS.)
     setlocale(LC_CTYPE, "");
     if (strcmp("UTF-8", nl_langinfo(CODESET)))
-      uselocale(newlocale(LC_CTYPE_MASK, "en_US.UTF-8", NULL));
+      uselocale(newlocale(LC_CTYPE_MASK, "C.UTF-8", 0) ? :
+        newlocale(LC_CTYPE_MASK, "en_US.UTF-8", 0));
 
     setvbuf(stdout, 0, (which->flags & TOYFLAG_LINEBUF) ? _IOLBF : _IONBF, 0);
   }
@@ -198,7 +207,7 @@ void toy_init(struct toy_list *which, char *argv[])
 
 // Run an internal toybox command.
 // Only returns if it can't run command internally, otherwise xexit() when done.
-static void toy_exec_which(struct toy_list *which, char *argv[])
+void toy_exec_which(struct toy_list *which, char *argv[])
 {
   // Return if we can't find it (which includes no multiplexer case),
   if (!which || (which->flags&TOYFLAG_NOFORK)) return;
@@ -210,7 +219,7 @@ static void toy_exec_which(struct toy_list *which, char *argv[])
   // Signed typecast so stack growth direction is irrelevant: we're measuring
   // the distance between two pointers on the same stack, hence the labs().
   if (!CFG_TOYBOX_NORECURSE && toys.stacktop)
-    if (labs((long)toys.stacktop-(long)&which)>6000) return;
+    if (labs((long)toys.stacktop-(long)&which)>24000) return;
 
   // Return if we need to re-exec to acquire root via suid bit.
   if (toys.which && (which->flags&TOYFLAG_ROOTONLY) && toys.wasroot) return;

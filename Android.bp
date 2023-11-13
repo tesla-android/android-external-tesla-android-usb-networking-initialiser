@@ -28,6 +28,7 @@ cc_binary {
         "-Wno-string-plus-int",
         "-Wno-unused-parameter",
         "-Wno-unused-variable",
+	"-Wno-invalid-source-encoding",
         "-funsigned-char",
         "-ffunction-sections",
         "-fdata-sections",
